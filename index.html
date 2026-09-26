@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Card Stores</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink-deep: #0F1013;
+    --panel: #1B1C21;
+    --text: #ECE8DD;
+    --text-soft: #948E7E;
+    --gold: #C9A15C;
+    --gold-dim: #8A7040;
+    --line: #34333A;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--ink-deep);
+    background-image:
+      radial-gradient(1200px 600px at 15% -10%, rgba(201,161,92,0.10), transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, rgba(201,161,92,0.06), transparent 55%);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 0 32px 56px; }
+  .page-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: clamp(30px, 5vw, 44px);
+    max-width: 1100px;
+    margin: 48px auto 0;
+    padding: 0 32px;
+    color: var(--text);
+  }
+  .hero {
+    padding: 22px 28px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--gold);
+    border-radius: 4px;
+    margin: 24px 0 32px;
+  }
+  .hero-text { color: var(--text-soft); font-size: 14.5px; line-height: 1.6; max-width: 640px; margin: 0; }
+
+  .cta-row { display: flex; gap: 12px; margin-bottom: 40px; flex-wrap: wrap; }
+  .cta-row .btn { width: 100%; text-align: center; }
+  @media (min-width: 700px) { .cta-row .btn { width: auto; } }
+  .btn {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 12px 22px;
+    border-radius: 4px;
+    border: 1px solid var(--gold-dim);
+    background: transparent;
+    color: var(--gold);
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .btn:hover { background: var(--gold); color: var(--ink-deep); }
+  .btn-solid { background: var(--gold); color: var(--ink-deep); }
+  .btn-solid:hover { background: var(--gold-dim); border-color: var(--gold-dim); }
+
+  .store-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+  .store-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 18px;
+    text-decoration: none;
+    color: var(--text);
+    transition: border-color 0.15s ease;
+  }
+  .store-card:hover { border-color: var(--gold-dim); }
+  .store-card .name { font-family: 'Fraunces', serif; font-size: 17px; margin-bottom: 4px; }
+  .store-card .tagline { font-size: 12px; color: var(--text-soft); line-height: 1.4; }
+
+  .empty { color: var(--text-soft); font-size: 14px; padding: 20px 0; }
+
+  .featured-section { margin-bottom: 32px; }
+  .featured-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 10px;
+  }
+  .store-card.featured {
+    border-color: var(--gold-dim);
+    background: linear-gradient(160deg, var(--panel), #23201a);
+    position: relative;
+  }
+  .store-card.featured::before {
+    content: '\2605 FEATURED';
+    position: absolute; top: 10px; right: 12px;
+    font-size: 9px; font-weight: 600; letter-spacing: 1px;
+    color: var(--gold);
+  }
+
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 28px;
+    width: 90%;
+    max-width: 420px;
+  }
+  .modal h2 { font-family: 'Fraunces', serif; margin: 0 0 8px; font-size: 22px; }
+  .modal p { color: var(--text-soft); font-size: 13px; margin: 0 0 18px; line-height: 1.5; }
+  .modal label { font-size: 13px; color: var(--text-soft); display: block; margin-bottom: 6px; }
+  .modal input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 4px;
+    border: 1px solid var(--line);
+    background: var(--ink-deep);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    margin-bottom: 16px;
+    outline: none;
+  }
+  .modal input:focus { border-color: var(--gold-dim); }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+  .link-btn {
+    background: none; border: none; color: var(--text-soft);
+    font-size: 13px; cursor: pointer; text-decoration: underline;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .success-box {
+    background: var(--ink-deep);
+    border: 1px solid var(--gold-dim);
+    border-radius: 4px;
+    padding: 14px;
+    margin-top: 6px;
+    font-size: 13px;
+    word-break: break-all;
+  }
+  .success-box .owner-key { color: var(--gold); font-weight: 600; }
+</style>
+</head>
+<body>
+<h1 class="page-title">Card Stores</h1>
+
+<div class="wrap">
+  <section class="hero">
+    <p class="hero-text">Personal buy lists for trading cards. Anyone can create a free store to list what they're willing to pay for.</p>
+  </section>
+
+  <div class="featured-section" id="featuredSection" style="display:none;">
+    <div class="featured-label">Featured</div>
+    <div id="featuredStore" class="store-list"></div>
+  </div>
+
+  <div class="cta-row">
+    <button class="btn btn-solid" onclick="openCreateModal()">Create your free store</button>
+  </div>
+
+  <div id="storeList" class="store-list"></div>
+  <div id="emptyMsg" class="empty" style="display:none;">No stores yet. Be the first to create one.</div>
+</div>
+
+<div class="modal-overlay" id="createOverlay">
+  <div class="modal">
+    <h2>Create your store</h2>
+    <p>Pick a short name for your buy list. You'll get a private edit link — save it, since it's the only way back in.</p>
+    <label for="storeName">Store name</label>
+    <input id="storeName" type="text" placeholder="e.g. My Card Buy List" maxlength="60">
+    <div id="createResult"></div>
+    <div class="modal-actions">
+      <button class="link-btn" onclick="closeCreateModal()">Cancel</button>
+      <button class="btn btn-solid" onclick="createStore()">Create</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = "https://oiwlcfaawtvmrgxqezlx.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9pd2xjZmFhd3R2bXJneHFlemx4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk3NjgyMTYsImV4cCI6MjEwNTM0NDIxNn0.Zm9LCy62ENlnPT0wuMXs0KwvgVylHuiRiGXP1Whd524";
+
+  async function sb(path, opts = {}) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+      ...opts,
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+        ...(opts.headers || {})
+      }
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.status === 204 ? null : res.json();
+  }
+
+  function slugify(name) {
+    let base = name.toLowerCase().trim()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .slice(0, 40);
+    if (!base) base = 'store';
+    return base + '-' + Math.random().toString(36).slice(2, 6);
+  }
+
+  const FEATURED_SLUG = 'hi-wtiu';
+
+  async function loadStores() {
+    const listEl = document.getElementById('storeList');
+    const emptyEl = document.getElementById('emptyMsg');
+    const featuredSection = document.getElementById('featuredSection');
+    const featuredEl = document.getElementById('featuredStore');
+    try {
+      const stores = await sb('stores?select=slug,name,tagline&order=created_at.desc&limit=50');
+      if (!stores.length) {
+        emptyEl.style.display = 'block';
+        return;
+      }
+      const featured = stores.find(s => s.slug === FEATURED_SLUG);
+      const rest = stores.filter(s => s.slug !== FEATURED_SLUG);
+
+      if (featured) {
+        featuredSection.style.display = 'block';
+        featuredEl.innerHTML = `
+          <a class="store-card featured" href="store.html?s=${encodeURIComponent(featured.slug)}">
+            <div class="name">${escapeHtml(featured.name)}</div>
+            <div class="tagline">${escapeHtml(featured.tagline || '')}</div>
+          </a>
+        `;
+      } else {
+        featuredSection.style.display = 'none';
+      }
+
+      listEl.innerHTML = rest.map(s => `
+        <a class="store-card" href="store.html?s=${encodeURIComponent(s.slug)}">
+          <div class="name">${escapeHtml(s.name)}</div>
+          <div class="tagline">${escapeHtml(s.tagline || '')}</div>
+        </a>
+      `).join('');
+    } catch (e) {
+      emptyEl.textContent = 'Could not load stores right now.';
+      emptyEl.style.display = 'block';
+    }
+  }
+
+  function escapeHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str || '';
+    return d.innerHTML;
+  }
+
+  function openCreateModal() {
+    document.getElementById('createOverlay').classList.add('open');
+    document.getElementById('createResult').innerHTML = '';
+    document.getElementById('storeName').value = '';
+    document.getElementById('storeName').focus();
+  }
+  function closeCreateModal() {
+    document.getElementById('createOverlay').classList.remove('open');
+  }
+
+  async function createStore() {
+    const nameInput = document.getElementById('storeName');
+    const name = nameInput.value.trim();
+    const resultEl = document.getElementById('createResult');
+    if (!name) {
+      resultEl.innerHTML = '<p style="color:#c96060;">Please enter a name.</p>';
+      return;
+    }
+    const slug = slugify(name);
+    try {
+      const rows = await sb('stores', {
+        method: 'POST',
+        headers: { 'Prefer': 'return=representation' },
+        body: JSON.stringify({ slug, name })
+      });
+      const store = rows[0];
+      resultEl.innerHTML = `
+        <div class="success-box">
+          Store created! Your edit key (save this, it won't be shown again):<br>
+          <span class="owner-key">${store.owner_key}</span><br><br>
+          <a class="btn btn-solid" style="margin-top:8px;" href="store.html?s=${encodeURIComponent(store.slug)}&key=${encodeURIComponent(store.owner_key)}">Go to your store</a>
+        </div>
+      `;
+      loadStores();
+    } catch (e) {
+      resultEl.innerHTML = '<p style="color:#c96060;">Something went wrong. Try a different name.</p>';
+    }
+  }
+
+  loadStores();
+</script>
+</body>
+</html>
