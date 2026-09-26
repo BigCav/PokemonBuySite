@@ -16,6 +16,15 @@
     --gold-dim: #8A7040;
     --line: #34333A;
   }
+  :root[data-theme="light"] {
+    --ink-deep: #F7F5F0;
+    --panel: #FFFFFF;
+    --text: #1B1C21;
+    --text-soft: #6B6459;
+    --gold: #9A7530;
+    --gold-dim: #B8925A;
+    --line: #E2DED3;
+  }
   * { box-sizing: border-box; }
   body {
     margin: 0;
@@ -27,7 +36,15 @@
     font-family: 'Inter', sans-serif;
     -webkit-font-smoothing: antialiased;
     min-height: 100vh;
+    transition: background 0.2s ease, color 0.2s ease;
   }
+  .theme-toggle {
+    position: fixed; top: 18px; right: 18px; z-index: 50;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 20px;
+    padding: 7px 14px; font-size: 12px; font-weight: 600; color: var(--text-soft);
+    cursor: pointer; font-family: 'Inter', sans-serif;
+  }
+  .theme-toggle:hover { border-color: var(--gold-dim); color: var(--gold); }
   .wrap { max-width: 1100px; margin: 0 auto; padding: 0 32px 56px; }
   .page-title {
     font-family: 'Fraunces', serif;
@@ -155,6 +172,7 @@
 </style>
 </head>
 <body>
+<button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">&#9788; Light</button>
 <h1 class="page-title">Card Stores</h1>
 
 <div class="wrap">
@@ -283,6 +301,11 @@
     }
     const slug = slugify(name);
     try {
+      const existing = await sb(`stores?name=ilike.${encodeURIComponent(name)}&select=id`);
+      if (existing.length) {
+        resultEl.innerHTML = '<p style="color:#c96060;">That store name is already taken. Please choose another.</p>';
+        return;
+      }
       const rows = await sb('stores', {
         method: 'POST',
         headers: { 'Prefer': 'return=representation' },
@@ -298,9 +321,32 @@
       `;
       loadStores();
     } catch (e) {
-      resultEl.innerHTML = '<p style="color:#c96060;">Something went wrong. Try a different name.</p>';
+      if (String(e).toLowerCase().includes('duplicate') || String(e).toLowerCase().includes('unique')) {
+        resultEl.innerHTML = '<p style="color:#c96060;">That store name is already taken. Please choose another.</p>';
+      } else {
+        resultEl.innerHTML = '<p style="color:#c96060;">Something went wrong. Try a different name.</p>';
+      }
     }
   }
+
+  function applyTheme(theme) {
+    if (theme === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+      document.getElementById('themeToggle').innerHTML = '&#9789; Dark';
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+      document.getElementById('themeToggle').innerHTML = '&#9788; Light';
+    }
+  }
+
+  function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+    const next = current === 'light' ? 'dark' : 'light';
+    localStorage.setItem('theme', next);
+    applyTheme(next);
+  }
+
+  applyTheme(localStorage.getItem('theme') || 'dark');
 
   loadStores();
 </script>
