@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Store</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink-deep: #0F1013;
+    --panel: #1B1C21;
+    --text: #ECE8DD;
+    --text-soft: #948E7E;
+    --gold: #C9A15C;
+    --gold-dim: #8A7040;
+    --line: #34333A;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--ink-deep);
+    background-image:
+      radial-gradient(1200px 600px at 15% 0%, rgba(201,161,92,0.14), transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, rgba(201,161,92,0.08), transparent 55%);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 0 32px 56px; }
+  .top-nav { max-width: 1100px; margin: 0 auto; padding: 24px 32px 0; }
+  .top-nav a { color: var(--text-soft); font-size: 13px; text-decoration: none; }
+  .top-nav a:hover { color: var(--gold); }
+
+  .page-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: clamp(28px, 5vw, 40px);
+    max-width: 1100px;
+    margin: 16px auto 0;
+    padding: 0 32px;
+    color: var(--text);
+  }
+  .hero {
+    padding: 20px 26px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--gold);
+    border-radius: 4px;
+    margin: 20px 0 0;
+  }
+  .hero-text { color: var(--text-soft); font-size: 14px; line-height: 1.6; max-width: 640px; margin: 0; }
+  #editBioBtn {
+    margin-top: 10px;
+    background: none; border: 1px solid var(--gold-dim); color: var(--gold);
+    border-radius: 4px; padding: 5px 12px; font-size: 11.5px; font-weight: 600;
+    cursor: pointer; font-family: 'Inter', sans-serif;
+  }
+  #editBioBtn:hover { background: var(--gold); color: var(--ink-deep); }
+  #bioTextarea {
+    width: 100%; padding: 10px 12px; border-radius: 4px;
+    border: 1px solid var(--line); background: var(--ink-deep); color: var(--text);
+    font-family: 'Inter', sans-serif; font-size: 13.5px; line-height: 1.5;
+    outline: none; resize: vertical;
+  }
+  #bioTextarea:focus { border-color: var(--gold-dim); }
+
+  .owner-bar {
+    margin: 16px 0 0;
+    padding: 10px 16px;
+    background: rgba(201,161,92,0.08);
+    border: 1px solid var(--gold-dim);
+    border-radius: 4px;
+    font-size: 12.5px;
+    color: var(--gold);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .owner-bar button {
+    background: var(--gold);
+    color: var(--ink-deep);
+    border: none;
+    border-radius: 4px;
+    padding: 6px 14px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .search-row { margin: 28px 0 20px; position: relative; }
+  .search-row input {
+    width: 100%;
+    padding: 13px 18px 13px 44px;
+    border-radius: 4px;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    color: var(--text);
+    outline: none;
+  }
+  .search-row input:focus { border-color: var(--gold-dim); }
+  .search-row svg {
+    position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+    width: 16px; height: 16px; stroke: var(--text-soft); pointer-events: none;
+  }
+  .count-line { font-size: 13px; color: var(--text-soft); margin-bottom: 18px; }
+
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  @media (min-width: 700px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (min-width: 1000px) { .grid { grid-template-columns: repeat(4, 1fr); } }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .card:hover { border-color: var(--gold-dim); }
+  .card.bought { opacity: 0.45; filter: grayscale(0.6); }
+  .card.bought .art::after {
+    content: 'BOUGHT';
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(15,16,19,0.55);
+    color: var(--gold);
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+  }
+  .art {
+    aspect-ratio: 5 / 7;
+    background: linear-gradient(160deg, #17181C, #1F2025);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .art img { width: 100%; height: 100%; object-fit: cover; }
+  .card-body { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 8px; flex: 1; border-top: 1px solid var(--line); }
+  .card-name { font-family: 'Fraunces', serif; font-size: 15px; line-height: 1.25; font-weight: 500; }
+  .card-meta { font-size: 12px; color: var(--text-soft); }
+  .price-row {
+    margin-top: auto;
+    display: flex; align-items: center;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 6px 10px;
+    background: var(--ink-deep);
+  }
+  .price-row span { color: var(--gold); font-size: 14px; margin-right: 2px; font-weight: 600; }
+  .price-row input {
+    border: none; background: transparent; outline: none;
+    font-family: 'Inter', sans-serif; font-weight: 600; font-size: 14px;
+    color: var(--text); width: 100%; padding: 0;
+  }
+  .card-actions { display: flex; gap: 6px; margin-top: 4px; }
+  .card-actions button {
+    flex: 1; font-size: 11px; padding: 6px; border-radius: 4px;
+    border: 1px solid var(--line); background: transparent; color: var(--text-soft);
+    cursor: pointer; font-family: 'Inter', sans-serif;
+  }
+  .card-actions button:hover { border-color: var(--gold-dim); color: var(--gold); }
+  .card-actions button.bought-btn.active { border-color: var(--gold); color: var(--gold); }
+
+  .add-card-form {
+    background: var(--panel);
+    border: 1px dashed var(--line);
+    border-radius: 6px;
+    padding: 16px;
+    margin-top: 24px;
+    display: none;
+  }
+  .add-card-form.open { display: block; }
+  .add-card-form label { font-size: 12px; color: var(--text-soft); display: block; margin-bottom: 4px; margin-top: 12px; }
+  .add-card-form label:first-child { margin-top: 0; }
+  .add-card-form input, .add-card-form select {
+    width: 100%; padding: 9px 10px; border-radius: 4px;
+    border: 1px solid var(--line); background: var(--ink-deep); color: var(--text);
+    font-family: 'Inter', sans-serif; font-size: 13px; outline: none;
+  }
+
+  .catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 8px;
+    margin-top: 10px;
+    max-height: 320px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .catalog-item {
+    background: var(--ink-deep);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+    text-align: center;
+  }
+  .catalog-item:hover { border-color: var(--gold-dim); }
+  .catalog-item.already-added { opacity: 0.35; cursor: not-allowed; filter: grayscale(0.7); }
+  .catalog-item.already-added:hover { border-color: var(--line); }
+  .catalog-item img { width: 100%; aspect-ratio: 5/7; object-fit: cover; display: block; }
+  .catalog-item .cname { font-size: 10px; padding: 4px 3px 2px; line-height: 1.2; color: var(--text); }
+  .catalog-item .cnum { font-size: 9px; padding: 0 3px 4px; color: var(--text-soft); }
+  .catalog-item .cadded { font-size: 8px; padding: 0 3px 4px; color: var(--gold); font-weight: 600; }
+  .catalog-empty { color: var(--text-soft); font-size: 13px; padding: 20px 0; text-align: center; grid-column: 1/-1; }
+
+  .picked-card {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    background: var(--ink-deep);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 14px;
+  }
+  .picked-card img { width: 50px; aspect-ratio: 5/7; object-fit: cover; border-radius: 3px; }
+  .picked-card .pname { font-family: 'Fraunces', serif; font-size: 15px; }
+  .picked-card .pmeta { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+  .form-actions { margin-top: 16px; display: flex; gap: 10px; }
+  .btn {
+    font-family: 'Inter', sans-serif; font-weight: 600; font-size: 13px;
+    padding: 10px 18px; border-radius: 4px; border: 1px solid var(--gold-dim);
+    background: transparent; color: var(--gold); cursor: pointer;
+  }
+  .btn-solid { background: var(--gold); color: var(--ink-deep); }
+
+  .no-results { text-align: center; padding: 60px 20px; color: var(--text-soft); font-family: 'Fraunces', serif; font-size: 17px; display: none; }
+
+  .sold-section { margin-top: 44px; padding-top: 28px; border-top: 1px solid var(--line); }
+  .sold-title { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 500; margin: 0 0 4px; color: var(--text); }
+  .sold-sub { font-size: 12.5px; color: var(--text-soft); margin: 0 0 16px; }
+  .sold-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; }
+  @media (min-width: 1000px) { .sold-grid { grid-template-columns: repeat(5, 1fr); } }
+  .sold-item { background: var(--panel); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; text-align: center; opacity: 0.7; }
+  .sold-item img { width: 100%; aspect-ratio: 5/7; object-fit: cover; display: block; filter: grayscale(0.4); }
+  .sold-item .sname { font-size: 10px; padding: 4px 3px 2px; color: var(--text); line-height: 1.2; }
+  .sold-item .sprice { font-size: 9px; padding: 0 3px 4px; color: var(--gold); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="top-nav"><a href="index.html">&larr; All stores</a></div>
+<h1 class="page-title" id="storeName">Loading&hellip;</h1>
+
+<div class="wrap">
+  <section class="hero">
+    <p class="hero-text" id="storeTagline"></p>
+    <button id="editBioBtn" onclick="toggleBioEdit()" style="display:none;">Edit description</button>
+    <div id="bioEditForm" style="display:none; margin-top:12px;">
+      <textarea id="bioTextarea" rows="3" placeholder="A short description or bio for your store&hellip;"></textarea>
+      <div class="form-actions" style="margin-top:10px;">
+        <button class="btn" onclick="toggleBioEdit()">Cancel</button>
+        <button class="btn btn-solid" onclick="saveBio()">Save</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="owner-bar" id="ownerBar" style="display:none;">
+    <span>You're viewing this as the owner — you can add, edit, and remove listings.</span>
+    <div style="display:flex; gap:8px;">
+      <button onclick="copyStoreLink()" id="copyLinkBtn">Copy store link</button>
+      <button onclick="toggleAddForm()">+ Add card</button>
+    </div>
+  </div>
+
+  <div class="add-card-form" id="addForm">
+    <div id="catalogPicker">
+      <label>Pick a card</label>
+      <input type="text" id="catalogSearch" placeholder="Search the catalog by name or number&hellip;">
+      <div class="catalog-grid" id="catalogGrid"></div>
+    </div>
+    <div id="priceStep" style="display:none;">
+      <div class="picked-card" id="pickedCardPreview"></div>
+      <label>Price you'll pay ($)</label>
+      <input id="newPrice" type="number" step="0.01" min="0" placeholder="0.00" autofocus>
+      <div class="form-actions">
+        <button class="btn" onclick="backToPicker()">&larr; Choose different card</button>
+        <button class="btn btn-solid" onclick="confirmAddCard()">Add to buy list</button>
+      </div>
+    </div>
+    <div class="form-actions" id="cancelRow">
+      <button class="btn" onclick="toggleAddForm()">Cancel</button>
+    </div>
+  </div>
+
+  <div class="search-row">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+    <input type="text" id="searchInput" placeholder="Search by card name or number&hellip;">
+  </div>
+  <div class="count-line" id="countLine"></div>
+
+  <div class="grid" id="grid"></div>
+  <div class="no-results" id="noResults">No cards match that search.</div>
+
+  <div class="sold-section" id="soldSection" style="display:none;">
+    <h2 class="sold-title">Sold to me</h2>
+    <p class="sold-sub">Cards already bought from sellers &mdash; a public record so sellers know these are settled.</p>
+    <div class="sold-grid" id="soldGrid"></div>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = "https://oiwlcfaawtvmrgxqezlx.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9pd2xjZmFhd3R2bXJneHFlemx4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk3NjgyMTYsImV4cCI6MjEwNTM0NDIxNn0.Zm9LCy62ENlnPT0wuMXs0KwvgVylHuiRiGXP1Whd524";
+
+  const params = new URLSearchParams(location.search);
+  const slug = params.get('s');
+  let ownerKey = params.get('key') || localStorage.getItem(`ownerKey:${slug}`) || null;
+  if (params.get('key')) {
+    localStorage.setItem(`ownerKey:${slug}`, params.get('key'));
+  }
+
+  let store = null;
+  let items = [];
+
+  async function sb(path, opts = {}) {
+    const headers = {
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      'Content-Type': 'application/json',
+      ...(opts.headers || {})
+    };
+    if (ownerKey) headers['x-owner-key'] = ownerKey;
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { ...opts, headers });
+    if (!res.ok) throw new Error(await res.text());
+    return res.status === 204 ? null : res.json();
+  }
+
+  function escapeHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str || '';
+    return d.innerHTML;
+  }
+
+  function formatMoney(val) {
+    if (val === undefined || val === null || val === '') return '';
+    const num = typeof val === 'string' ? parseFloat(val.replace(/,/g, '')) : val;
+    if (isNaN(num)) return '';
+    return num.toLocaleString('en-US', { maximumFractionDigits: 2 });
+  }
+
+  async function loadStore() {
+    if (!slug) {
+      document.getElementById('storeName').textContent = 'Store not found';
+      return;
+    }
+    try {
+      const stores = await sb(`stores?slug=eq.${encodeURIComponent(slug)}&select=*`);
+      if (!stores.length) {
+        document.getElementById('storeName').textContent = 'Store not found';
+        return;
+      }
+      store = stores[0];
+      document.title = store.name;
+      document.getElementById('storeName').textContent = store.name;
+      document.getElementById('storeTagline').textContent = store.tagline || '';
+
+      if (ownerKey === store.owner_key) {
+        document.getElementById('ownerBar').style.display = 'flex';
+        document.getElementById('editBioBtn').style.display = 'inline-block';
+      }
+
+      const rows = await sb(`items?store_id=eq.${store.id}&select=*&order=sort_order.asc`);
+      items = rows;
+      render(items);
+      renderSold(items);
+    } catch (e) {
+      document.getElementById('storeName').textContent = 'Could not load store';
+    }
+  }
+
+  function render(list) {
+    const grid = document.getElementById('grid');
+    const noResults = document.getElementById('noResults');
+    const unboughtTotal = list.filter(c => !c.bought).reduce((sum, c) => sum + (parseFloat(c.price) || 0), 0);
+    document.getElementById('countLine').textContent = `${list.length} of ${items.length} listings \u00b7 $${unboughtTotal.toLocaleString('en-US', { maximumFractionDigits: 2 })} still to buy`;
+
+    if (!list.length) {
+      grid.innerHTML = '';
+      noResults.style.display = 'block';
+      return;
+    }
+    noResults.style.display = 'none';
+
+    const isOwner = ownerKey === store.owner_key;
+
+    grid.innerHTML = list.map(card => `
+      <div class="card ${card.bought ? 'bought' : ''}">
+        <div class="art">
+          ${card.img ? `<img src="${escapeHtml(card.img)}" alt="${escapeHtml(card.name)}" loading="lazy" onerror="this.style.display='none'">` : ''}
+        </div>
+        <div class="card-body">
+          <div class="card-name">${escapeHtml(card.name)}</div>
+          <div class="card-meta">${escapeHtml(card.rarity)} &middot; ${escapeHtml(card.condition)}</div>
+          <div class="price-row">
+            <span>$</span>
+            <input type="text" inputmode="decimal" data-id="${card.id}" value="${formatMoney(card.price)}" ${isOwner ? '' : 'readonly'}>
+          </div>
+          ${isOwner ? `
+            <div class="card-actions">
+              <button class="bought-btn ${card.bought ? 'active' : ''}" onclick="toggleBought('${card.id}', ${!card.bought})" title="${card.bought ? 'Mark as not bought' : 'Mark as bought'}">Bought</button>
+              <button onclick="deleteCard('${card.id}')">Delete</button>
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderSold(list) {
+    const section = document.getElementById('soldSection');
+    const grid = document.getElementById('soldGrid');
+    const sold = list.filter(c => c.bought);
+    if (!sold.length) {
+      section.style.display = 'none';
+      return;
+    }
+    section.style.display = 'block';
+    grid.innerHTML = sold.map(card => `
+      <div class="sold-item">
+        ${card.img ? `<img src="${escapeHtml(card.img)}" alt="${escapeHtml(card.name)}" loading="lazy" onerror="this.style.display='none'">` : ''}
+        <div class="sname">${escapeHtml(card.name)}</div>
+        <div class="sprice">$${formatMoney(card.price)}</div>
+      </div>
+    `).join('');
+  }
+
+  function toggleBioEdit() {
+    const form = document.getElementById('bioEditForm');
+    const opening = form.style.display === 'none';
+    form.style.display = opening ? 'block' : 'none';
+    document.getElementById('editBioBtn').style.display = opening ? 'none' : 'inline-block';
+    if (opening) {
+      document.getElementById('bioTextarea').value = store.tagline || '';
+      document.getElementById('bioTextarea').focus();
+    }
+  }
+
+  async function saveBio() {
+    const newBio = document.getElementById('bioTextarea').value.trim();
+    try {
+      await sb(`stores?id=eq.${store.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ tagline: newBio })
+      });
+      store.tagline = newBio;
+      document.getElementById('storeTagline').textContent = newBio;
+      toggleBioEdit();
+    } catch (e) {
+      alert('Could not save description.');
+    }
+  }
+
+  async function copyStoreLink() {
+    const publicUrl = `${location.origin}${location.pathname}?s=${encodeURIComponent(slug)}`;
+    const btn = document.getElementById('copyLinkBtn');
+    try {
+      await navigator.clipboard.writeText(publicUrl);
+      const original = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = original; }, 1500);
+    } catch (e) {
+      prompt('Copy this link:', publicUrl);
+    }
+  }
+
+  async function toggleBought(id, newVal) {
+    try {
+      await sb(`items?id=eq.${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ bought: newVal })
+      });
+      const item = items.find(i => i.id === id);
+      if (item) item.bought = newVal;
+      renderSold(items);
+      render(items.filter(c => document.getElementById('searchInput').value
+        ? (c.name.toLowerCase().includes(document.getElementById('searchInput').value.toLowerCase()) || String(c.rarity).toLowerCase().includes(document.getElementById('searchInput').value.toLowerCase()))
+        : true));
+    } catch (e) {
+      alert('Could not update bought status.');
+    }
+  }
+
+  document.getElementById('grid').addEventListener('blur', async (e) => {
+    if (e.target.tagName === 'INPUT' && ownerKey === (store && store.owner_key)) {
+      const id = e.target.dataset.id;
+      const raw = e.target.value.replace(/,/g, '');
+      const num = parseFloat(raw);
+      if (isNaN(num)) return;
+      e.target.value = formatMoney(num);
+      try {
+        await sb(`items?id=eq.${id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ price: num })
+        });
+      } catch (err) {
+        alert('Could not save price change.');
+      }
+    }
+  }, true);
+
+  document.getElementById('searchInput').addEventListener('input', (e) => {
+    const q = e.target.value.toLowerCase();
+    const filtered = items.filter(c =>
+      c.name.toLowerCase().includes(q) || String(c.rarity).toLowerCase().includes(q)
+    );
+    render(filtered);
+  });
+
+  let catalog = [];
+  let pickedCard = null;
+
+  function toggleAddForm() {
+    const form = document.getElementById('addForm');
+    const opening = !form.classList.contains('open');
+    form.classList.toggle('open');
+    if (opening) {
+      backToPicker();
+      loadCatalog();
+    }
+  }
+
+  async function loadCatalog() {
+    const grid = document.getElementById('catalogGrid');
+    grid.innerHTML = '<div class="catalog-empty">Loading catalog&hellip;</div>';
+    try {
+      catalog = await sb('catalog?select=*&order=number.asc');
+      renderCatalog(catalog);
+    } catch (e) {
+      grid.innerHTML = '<div class="catalog-empty">Could not load the catalog.</div>';
+    }
+  }
+
+  function renderCatalog(list) {
+    const grid = document.getElementById('catalogGrid');
+    if (!list.length) {
+      grid.innerHTML = '<div class="catalog-empty">No cards match.</div>';
+      return;
+    }
+    const addedCatalogIds = new Set(items.filter(i => i.catalog_id).map(i => i.catalog_id));
+    grid.innerHTML = list.map(c => {
+      const isAdded = addedCatalogIds.has(c.id);
+      return `
+      <div class="catalog-item ${isAdded ? 'already-added' : ''}" onclick='${isAdded ? '' : `pickCard(${JSON.stringify(c).replace(/'/g, "&apos;")})`}'>
+        <img src="${escapeHtml(c.img)}" alt="${escapeHtml(c.name)}" loading="lazy">
+        <div class="cname">${escapeHtml(c.name)}</div>
+        <div class="cnum">${escapeHtml(c.number)}</div>
+        ${isAdded ? '<div class="cadded">ON LIST</div>' : ''}
+      </div>
+    `;
+    }).join('');
+  }
+
+  document.getElementById('catalogSearch').addEventListener('input', (e) => {
+    const q = e.target.value.toLowerCase();
+    renderCatalog(catalog.filter(c =>
+      c.name.toLowerCase().includes(q) || c.number.toLowerCase().includes(q)
+    ));
+  });
+
+  function pickCard(card) {
+    pickedCard = card;
+    document.getElementById('catalogPicker').style.display = 'none';
+    document.getElementById('cancelRow').style.display = 'none';
+    document.getElementById('priceStep').style.display = 'block';
+    document.getElementById('pickedCardPreview').innerHTML = `
+      <img src="${escapeHtml(card.img)}" alt="${escapeHtml(card.name)}">
+      <div>
+        <div class="pname">${escapeHtml(card.name)}</div>
+        <div class="pmeta">${escapeHtml(card.number)} &middot; ${escapeHtml(card.rarity)}</div>
+      </div>
+    `;
+    document.getElementById('newPrice').value = '';
+    document.getElementById('newPrice').focus();
+  }
+
+  function backToPicker() {
+    pickedCard = null;
+    document.getElementById('catalogPicker').style.display = 'block';
+    document.getElementById('cancelRow').style.display = 'flex';
+    document.getElementById('priceStep').style.display = 'none';
+  }
+
+  async function confirmAddCard() {
+    if (!pickedCard) return;
+    const price = parseFloat(document.getElementById('newPrice').value);
+    if (isNaN(price) || price < 0) { alert('Please enter a price.'); return; }
+
+    try {
+      await sb('items', {
+        method: 'POST',
+        headers: { 'Prefer': 'return=representation' },
+        body: JSON.stringify({
+          store_id: store.id,
+          catalog_id: pickedCard.id,
+          sort_order: items.length,
+          name: pickedCard.name,
+          rarity: pickedCard.number + ' ' + pickedCard.rarity,
+          condition: 'Raw',
+          price,
+          bought: false,
+          img: pickedCard.img
+        })
+      });
+      toggleAddForm();
+      loadStore();
+    } catch (e) {
+      alert('Could not add card. Make sure you have edit access to this store.');
+    }
+  }
+
+  async function deleteCard(id) {
+    if (!confirm('Remove this listing?')) return;
+    try {
+      await sb(`items?id=eq.${id}`, { method: 'DELETE' });
+      loadStore();
+    } catch (e) {
+      alert('Could not delete card.');
+    }
+  }
+
+  loadStore();
+</script>
+</body>
+</html>
