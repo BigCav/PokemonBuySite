@@ -109,9 +109,11 @@
   }
   .store-card.featured {
     border-color: var(--gold-dim);
-    background: linear-gradient(160deg, var(--panel), #23201a);
+    background: linear-gradient(160deg, var(--panel), rgba(201,161,92,0.14));
     position: relative;
   }
+  .store-card.featured .name,
+  .store-card.featured .tagline { color: var(--text); }
   .store-card.featured::before {
     content: '\2605 FEATURED';
     position: absolute; top: 10px; right: 12px;
